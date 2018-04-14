@@ -1,3 +1,5 @@
 FROM node:carbon
-WORKDIR /app
+
+WORKDIR /home/node/app
+
 CMD ["npm", "test"]
