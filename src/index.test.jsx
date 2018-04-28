@@ -1,13 +1,13 @@
-import rippleFoundation from '@materialr/ripple';
+import * as ripple from '@material/ripple';
 import { mount, shallow } from 'enzyme';
 import React from 'react';
 
-import FAB from './index';
+import Fab from './index';
 
 const ICON = 'ICON';
 
-test('Renders only default className', () => {
-  const wrapper = shallow(<FAB icon={ICON} />);
+test('Renders the default classNames', () => {
+  const wrapper = shallow(<Fab icon={ICON} />, { disableLifecycleMethods: true });
   const expected = 'material-icons mdc-fab';
 
   const actual = wrapper.props().className;
@@ -15,18 +15,12 @@ test('Renders only default className', () => {
   expect(actual).toBe(expected);
 });
 
-test('Renders all classNames based on props', () => {
-  const wrapper = shallow(<FAB exited icon={ICON} mini />);
-  const expected = 'material-icons mdc-fab mdc-fab--exited mdc-fab--mini';
-
-  const actual = wrapper.props().className;
-
-  expect(actual).toBe(expected);
-});
-
-test('Renders extra classNames that are passed in', () => {
+test('Renders additional classNames from the \'className\' prop', () => {
   const CLASS_NAME = 'CLASS_NAME';
-  const wrapper = shallow(<FAB className={CLASS_NAME} icon={ICON} />);
+  const wrapper = shallow(
+    <Fab className={CLASS_NAME} icon={ICON} />,
+    { disableLifecycleMethods: true },
+  );
   const expected = `material-icons mdc-fab ${CLASS_NAME}`;
 
   const actual = wrapper.props().className;
@@ -34,158 +28,129 @@ test('Renders extra classNames that are passed in', () => {
   expect(actual).toBe(expected);
 });
 
-test('Adds icon as a string', () => {
-  const wrapper = shallow(<FAB icon={ICON} />);
-  const expected = ICON;
+test('Renders an exited fab', () => {
+  const wrapper = shallow(<Fab exited icon={ICON} />, { disableLifecycleMethods: true });
+  const expected = 'material-icons mdc-fab mdc-fab--exited';
 
-  const actual = wrapper.text();
-
-  expect(actual).toBe(expected);
-});
-
-test('Does not add a ripple when it is disabled', () => {
-  const wrapper = mount(<FAB icon={ICON} />);
-  const expected = undefined;
-
-  const actual = wrapper.instance().rippleFoundation;
+  const actual = wrapper.props().className;
 
   expect(actual).toBe(expected);
 });
 
-test('Adds a ripple when it is enabled', () => {
-  const wrapper = mount(<FAB icon={ICON} rippleEnabled />);
-  const { disabled, rippleCentered } = wrapper.props();
-  const instance = wrapper.instance();
-  const { button, updateClassNames, updateCssVariables } = instance;
-  const expected = rippleFoundation({
-    centered: rippleCentered,
-    disabled,
-    element: button,
-    self: instance,
-    updateClassNames,
-    updateCssVariables,
-  });
+test('Renders a mini fab', () => {
+  const wrapper = shallow(<Fab mini icon={ICON} />, { disableLifecycleMethods: true });
+  const expected = 'material-icons mdc-fab mdc-fab--mini';
 
-  const actual = instance.rippleFoundation;
-
-  expect(JSON.stringify(actual)).toEqual(JSON.stringify(expected));
-});
-
-test('Adds the ripple if the prop changes', () => {
-  const wrapper = mount(<FAB icon={ICON} />);
-  const instance = wrapper.instance();
-  instance.rippleCreate = jest.fn();
-
-  wrapper.setProps({ rippleEnabled: true });
-
-  expect(instance.rippleCreate).toHaveBeenCalledTimes(1);
-});
-
-test('Removes the ripple if the prop changes', () => {
-  const wrapper = mount(<FAB icon={ICON} rippleEnabled />);
-  const instance = wrapper.instance();
-  const expected = undefined;
-
-  wrapper.setProps({ rippleEnabled: false });
-  const actual = instance.rippleFoundation;
+  const actual = wrapper.props().className;
 
   expect(actual).toBe(expected);
 });
 
-test('Centers the ripple if it was previously uncentered', () => {
-  const wrapper = mount(<FAB icon={ICON} rippleEnabled />);
-  const { disabled } = wrapper.props();
-  const instance = wrapper.instance();
-  const { button, updateClassNames, updateCssVariables } = instance;
-  const expected = rippleFoundation({
-    centered: true,
-    disabled,
-    element: button,
-    self: instance,
-    updateClassNames,
-    updateCssVariables,
-  });
+test('Passes through the correct props', () => {
+  const ON_CLICK = () => 'ON_CLICK';
+  const wrapper = shallow(
+    <Fab icon={ICON} onClick={ON_CLICK} />,
+    { disableLifecycleMethods: true },
+  );
+  const expectedIcon = ICON;
+  const expectedOnClick = ON_CLICK;
 
-  wrapper.setProps({ rippleCentered: true });
-  const actual = instance.rippleFoundation;
+  const actualIcon = wrapper.find('.mdc-fab__icon').props().children;
+  const actualOnClick = wrapper.props().onClick;
 
-  expect(JSON.stringify(actual)).toEqual(JSON.stringify(expected));
+  expect(actualIcon).toBe(expectedIcon);
+  expect(actualOnClick).toBe(expectedOnClick);
 });
 
-test('Updates classNames in state when \'updateClassNames()\' is called', () => {
-  const CLASS_NAMES = ['CLASS_NAME'];
-  const wrapper = mount(<FAB icon={ICON} />);
+test('Creates the MDCRipple component on mount if enabled', () => {
+  const MDCRipple = jest.fn();
+  ripple.MDCRipple = MDCRipple;
+  const wrapper = mount(<Fab icon={ICON} ripple />);
   const instance = wrapper.instance();
-  const expected = CLASS_NAMES;
+  const expected = instance.elementRoot;
 
-  instance.updateClassNames(CLASS_NAMES);
-  const actual = instance.state.classNames;
+  const actual = MDCRipple.mock.calls[0][0];
 
-  expect(actual).toEqual(expected);
+  expect(actual).toBe(expected);
 });
 
-test('Does not update classNames in state when \'updateClassNames()\' is called on an unmounted component', () => {
-  const CLASS_NAMES = ['CLASS_NAME'];
-  const wrapper = shallow(<FAB icon={ICON} />);
-  const instance = wrapper.instance();
-  instance.setState = jest.fn();
+test('does not create the MDCRipple component on mount if disabled', () => {
+  const MDCRipple = jest.fn();
+  ripple.MDCRipple = MDCRipple;
+  mount(<Fab icon={ICON} />);
+  const expected = 0;
 
-  instance.componentIsMounted = false;
-  instance.updateClassNames(CLASS_NAMES);
+  const actual = MDCRipple.mock.calls.length;
 
-  expect(instance.setState).toHaveBeenCalledTimes(0);
+  expect(actual).toBe(expected);
 });
 
-test('Updates cssVariables in state when \'updateCssVariables()\' is called', () => {
-  const CSS_VARIABLES = ['CSS_VARIABLE'];
-  const wrapper = mount(<FAB icon={ICON} />);
+test('Destroys the ripple on unmount if enabled', () => {
+  const destroy = jest.fn();
+  const wrapper = mount(<Fab icon={ICON} ripple />);
   const instance = wrapper.instance();
-  const expected = CSS_VARIABLES;
-
-  instance.updateCssVariables(CSS_VARIABLES);
-  const actual = instance.state.cssVariables;
-
-  expect(actual).toEqual(expected);
-});
-
-test('Does not update cssVariables in state when \'updateCssVariables()\' is called on an unmounted component', () => {
-  const CSS_VARIABLES = ['CSS_VARIABLE'];
-  const wrapper = mount(<FAB icon={ICON} />);
-  const instance = wrapper.instance();
-  instance.setState = jest.fn();
-
-  instance.componentIsMounted = false;
-  instance.updateCssVariables(CSS_VARIABLES);
-
-  expect(instance.setState).toHaveBeenCalledTimes(0);
-});
-
-test('Destroys the ripple when the component unmounts', () => {
-  const wrapper = mount(<FAB icon={ICON} rippleEnabled />);
-  const instance = wrapper.instance();
-  instance.rippleDestroy = jest.fn();
+  const expected = 1;
+  instance.ripple = { destroy };
 
   wrapper.unmount();
+  const actual = destroy.mock.calls.length;
 
-  expect(instance.rippleDestroy).toHaveBeenCalledTimes(1);
+  expect(actual).toBe(expected);
 });
 
-test('Does not detroy the ripple when the component unmounts without a ripple', () => {
-  const wrapper = mount(<FAB icon={ICON} />);
+test('Does not destroy the ripple on unmount if disabled', () => {
+  const destroy = jest.fn();
+  const wrapper = mount(<Fab icon={ICON} />);
   const instance = wrapper.instance();
-  instance.rippleDestroy = jest.fn();
+  const expected = 0;
+  instance.ripple = { destroy };
 
   wrapper.unmount();
+  const actual = destroy.mock.calls.length;
 
-  expect(instance.rippleDestroy).toHaveBeenCalledTimes(0);
+  expect(actual).toBe(expected);
 });
 
-test('Does not detroy the ripple when the component unmounts', () => {
-  const wrapper = shallow(<FAB icon={ICON} />);
+test('Creates the MDCRipple component on update if enabled', () => {
+  const MDCRipple = jest.fn();
+  ripple.MDCRipple = MDCRipple;
+  const wrapper = mount(<Fab icon={ICON} />);
   const instance = wrapper.instance();
-  instance.rippleDestroy = jest.fn();
+  const expected = instance.elementRoot;
 
-  wrapper.unmount();
+  wrapper.setProps({ ripple: true });
+  const actual = MDCRipple.mock.calls[0][0];
 
-  expect(instance.rippleDestroy).toHaveBeenCalledTimes(0);
+  expect(actual).toBe(expected);
+});
+
+test('Destroys the ripple on update if disabled', () => {
+  const destroy = jest.fn();
+  const wrapper = mount(<Fab icon={ICON} ripple />);
+  const instance = wrapper.instance();
+  const expected = 1;
+  instance.ripple = { destroy };
+
+  wrapper.setProps({ ripple: false });
+  const actual = destroy.mock.calls.length;
+
+  expect(actual).toBe(expected);
+});
+
+test('Makes no change when the ripple prop doesn\'t change', () => {
+  const destroy = jest.fn();
+  const MDCRipple = jest.fn();
+  ripple.MDCRipple = MDCRipple;
+  const wrapper = mount(<Fab icon={ICON} />);
+  const instance = wrapper.instance();
+  const expectedDestroy = 0;
+  const expectedMDCRipple = 0;
+  instance.ripple = { destroy };
+
+  wrapper.setProps({ ripple: false });
+  const actualDestroy = destroy.mock.calls.length;
+  const actualMDCRipple = MDCRipple.mock.calls.length;
+
+  expect(actualDestroy).toBe(expectedDestroy);
+  expect(actualMDCRipple).toBe(expectedMDCRipple);
 });

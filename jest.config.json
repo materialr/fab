@@ -3,6 +3,9 @@
     "/node_modules/",
     "<rootDir>/.jest"
   ],
+  "moduleNameMapper": {
+    "\\.scss$": "<rootDir>/.jest/style-mock.js"
+  },
   "roots": [
     "<rootDir>/src"
   ],
@@ -14,7 +17,7 @@
     "/node_modules/",
     "<rootDir>/.jest"
   ],
-  "moduleNameMapper": {
-    "\\.scss$": "<rootDir>/.jest/style-mock.js"
-  }
+  "transformIgnorePatterns": [
+    "<rootDir>/node_modules/(!@material)"
+  ]
 }
