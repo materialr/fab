@@ -3,6 +3,8 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import React from 'react';
 
+import '@material/fab/mdc-fab.scss';
+
 class Fab extends React.Component {
   constructor(props) {
     super(props);
