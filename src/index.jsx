@@ -50,12 +50,24 @@ class Fab extends React.Component {
     this.ripple.destroy();
   }
   render() {
-    const { getClassNames, props: { icon, onClick } } = this;
+    const {
+      getClassNames,
+      props: {
+        className,
+        exited,
+        icon,
+        mini,
+        onClick,
+        ripple,
+        ...props
+      },
+    } = this;
     return (
       <button
         className={getClassNames()}
         onClick={onClick}
         ref={(elementRoot) => { this.elementRoot = elementRoot; }}
+        {...props}
       >
         <span className="mdc-fab__icon">
           {icon}
