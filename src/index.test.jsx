@@ -154,3 +154,13 @@ test('Makes no change when the ripple prop doesn\'t change', () => {
   expect(actualDestroy).toBe(expectedDestroy);
   expect(actualMDCRipple).toBe(expectedMDCRipple);
 });
+
+test('Passes through additional properties', () => {
+  const DATA_QA = 'DATA_QA';
+  const wrapper = shallow(<Fab data-qa={DATA_QA} icon={ICON} />, { disableLifecycleMethods: true });
+  const expected = DATA_QA;
+
+  const actual = wrapper.props()['data-qa'];
+
+  expect(actual).toBe(expected);
+});
